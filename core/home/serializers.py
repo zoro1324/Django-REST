@@ -1,10 +1,19 @@
 
 from rest_framework import serializers
+from .models import Person,Color
+import matplotlib.colors as mcolors
 
-from .models import Person
 
+
+
+class ColorSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Color
+        fields = ['color_name']
 
 class PersonSerializers(serializers.ModelSerializer):
+    color = ColorSerializers()
+    color_code = serializers.SerializerMethodField()
 
     class Meta:
         model = Person
@@ -23,5 +32,12 @@ class PersonSerializers(serializers.ModelSerializer):
                 continue
             else:
                 raise serializers.ValidationError("Non character values are not allowed.")
-        
         return name
+    
+    def get_color_code(self,obj):
+        
+        color_obj = Color.objects.get(id=obj.color.id)
+        color_name = color_obj.color_name
+        color_code = mcolors.to_hex(color_name)
+
+        return {"color_code":color_code}
